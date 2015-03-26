@@ -185,7 +185,7 @@ libraries += [
     scalaz : "org.scalaz:scalaz-core_${versions.bcScala}:${versions.scalaz}",
 
     //... Shapeless
-    shapeless : "org.chuusai:shapeless_${versions.bcScala}:${versions.shapeless}",
+    shapeless : "com.chuusai:shapeless_${versions.bcScala}:${versions.shapeless}",
 
     //... Akka
     akka_actor  : "com.typesafe.akka:akka-actor_${versions.bcScala}:${versions.akka}",
