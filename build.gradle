@@ -1,0 +1,254 @@
+apply plugin: 'scala'
+
+//... Project group and description
+description = "Typelevel Experiments"
+ext {
+    //... Project group and version
+    orgName    = this.orgName
+    group      = this.group
+    version    = this.version
+    isSnapshot = version.endsWith('-SNAPSHOT')
+
+    //... Nexus settings
+    nexusHost          = 'gtsnexus.liquidnet.com'
+    nexusRealm         = 'Sonatype Nexus Repository Manager'
+    nexusRepoUrl       = "http://${nexusHost}/nexus/content/groups/public"
+    nexusReleasesRepo  = "http://${nexusHost}/nexus/content/repositories/releases"
+    nexusSnapshotsRepo = "http://${nexusHost}/nexus/content/repositories/snapshots"
+
+    parentProject  = ":typelevel-experiments" as String
+
+    publishedModules = [ ]
+    assembledModules = [ ]
+
+    versions  = [:]
+    libraries = [:]
+    exclude_modules = [:]
+}
+
+//... Inject configuration into all projects
+allprojects { project ->
+
+    repositories {
+        corporateNexusRepo(delegate)
+    }
+
+    buildscript {
+        repositories {
+            corporateNexusRepo(delegate)
+        }
+    }
+
+    apply plugin: 'idea'
+
+    tasks.withType(ScalaCompile) {
+        scalaCompileOptions.additionalParameters = [
+                '-target:jvm-1.6',
+                '-deprecation',
+                '-encoding', 'UTF-8',
+                '-feature',
+                '-unchecked',
+                '-Xfatal-warnings',
+                '-Xlint',
+                '-Yno-adapted-args',
+                '-Ywarn-dead-code',
+                '-Ywarn-numeric-widen',
+             // '-Ywarn-value-discard',
+                '-Xfuture',
+             // '-Ywarn-unused-import',  // 2.11 only
+                '-explaintypes'
+        ]
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            //... Fail eagerly on version conflict (includes transitive dependencies)
+            //... For e.g. multiple different versions of the same dependency (group and name are equal)
+            failOnVersionConflict()
+
+            //... Force certain versions of dependencies (including transitive)
+            /*
+            force libraries.scala_library
+            force libraries.scala_reflect
+            force libraries.scalap
+            force libraries.slf4j_api
+            force libraries.commons_logging
+            force libraries.commons_lang
+            force libraries.parboiled
+            force libraries.casbah
+            force libraries.camel_core
+            force libraries.akka_actor
+            */
+        }
+    }
+}
+
+//... Library Versions
+versions += [
+    oracle_jdbc      : '11.2.0.1.0',
+    solace_jms       : solaceVersion,
+    ln_solace_jms    : "${solaceVersion}_1.0.0",
+    camel            : '2.12.2',
+    tomcat_jdbc_pool : '7.0.20',
+    slf4j            : '1.6.1',
+    log4j            : '1.2.16',
+    jms              : '1.1.1',
+    services_util    : '1.0.3',
+    log4j_extras     : '1.1',
+    joda_time        : '2.1',
+    joda_convert     : '1.2',
+
+    commons_logging  : '1.1.1',
+    commons_io       : '2.4',
+    commons_lang     : '2.4',
+
+    protobuf         : '2.4.1',
+    protobuf_marshal : '1.0.3',
+
+    //... Scala libs
+    scala           : scalaVersion,
+    bcScala         : getBinaryCompVersion(scalaVersion),
+    akka            : '2.3.4',
+    typesafe_config : '1.2.1',
+    slick           : '2.1.0',
+    scalaz          : '7.1.1',
+    shapeless       : '2.0.0',
+    casbah          : '2.6.5',
+    salat           : '1.9.6',
+    spray           : '1.3.1',
+    spray_json      : '1.2.5',
+    parboiled       : '1.1.6',
+
+    //... Testing libs
+    junit      : '4.10',
+    scalatest  : '2.2.1',
+    scalacheck : '1.10.0',
+]
+
+//... Libraries used by this project
+libraries += [
+    //... Logging
+    slf4j_api      : "org.slf4j:slf4j-api:${versions.slf4j}",
+    slf4j_log4j    : "org.slf4j:slf4j-log4j12:${versions.slf4j}",
+    jcl_over_slf4j : "org.slf4j:jcl-over-slf4j:${versions.slf4j}",
+    jul_to_slf4j   : "org.slf4j:jul-to-slf4j:${versions.slf4j}",
+
+    log4j          : "log4j:log4j:${versions.log4j}",
+    log4j_extras   : "log4j:apache-log4j-extras:${versions.log4j_extras}",
+
+    //... JMS
+    solace_jms    : "com.solacesystems:sol-jms:${versions.solace_jms}",                        //... Solace JMS
+    solace_jcsmp  : "com.solacesystems:sol-jcsmp:${versions.solace_jms}",                      //... Solace JCSMP
+    solace_common : "com.solacesystems:sol-common:${versions.solace_jms}",                     //... Solace Common
+    ln_solace_jms : "com.liquidnet.messaging.solace:ln-solace-jms:${versions.ln_solace_jms}",  //... LN Solace JMS
+    jms_spec      : "org.apache.geronimo.specs:geronimo-jms_1.1_spec:${versions.jms}",         //... JMS Spec
+
+    //... Protocol Buffers
+    protobuf         : "com.google.protobuf:protobuf-java:${versions.protobuf}",
+    protobuf_marshal : "com.liquidnet.messaging.protobuf:protobuf-utils:${versions.protobuf_marshal}",
+
+    //... Camel
+    camel_core     : "org.apache.camel:camel-core:${versions.camel}",
+    camel_scala    : "org.apache.camel:camel-scala:${versions.camel}",
+    camel_jms      : "org.apache.camel:camel-jms:${versions.camel}",
+    camel_quartz   : "org.apache.camel:camel-quartz:${versions.camel}",
+
+    //... Oracle Driver & Tomcat JDBC Pool
+    oracle_jdbc          : "com.oracle:ojdbc6_g:${versions.oracle_jdbc}",                       //... Oracle JDBC
+    tomcat_jdbc_pool     : "org.apache.tomcat:tomcat-jdbc:${versions.tomcat_jdbc_pool}",
+    tomcat_juli          : "org.apache.tomcat.extras:tomcat-extras-juli:${versions.tomcat_jdbc_pool}",
+    tomcat_juli_adapters : "org.apache.tomcat.extras:tomcat-extras-juli-adapters:${versions.tomcat_jdbc_pool}",
+
+    //... Services
+    services_util : "com.liquidnet.grdb.services:services-util:${versions.services_util}",
+
+    //... Joda Time
+    joda_time    : "joda-time:joda-time:${versions.joda_time}",
+    joda_convert : "org.joda:joda-convert:${versions.joda_convert}",
+
+    //... Apache Commons
+    commons_io      : "commons-io:commons-io:${versions.commons_io}",
+    commons_logging : "commons-logging:commons-logging:${versions.commons_logging}",
+    commons_lang    : "commons-lang:commons-lang:${versions.commons_lang}",
+
+    //... Scala
+    scala_library : "org.scala-lang:scala-library:${versions.scala}",
+    scala_reflect : "org.scala-lang:scala-reflect:${versions.scala}",
+    scalap        : "org.scala-lang:scalap:${versions.scala}",
+
+    //... Typesafe Libraries
+    typesafe_config  : "com.typesafe:config:${versions.typesafe_config}",
+    slick            : "com.typesafe.slick:slick_${versions.bcScala}:${versions.slick}",
+    slick_extensions : "com.typesafe.slick:slick-extensions_${versions.bcScala}:${versions.slick}",
+
+    //... Scalaz
+    scalaz : "org.scalaz:scalaz-core_${versions.bcScala}:${versions.scalaz}",
+
+    //... Shapeless
+    shapeless : "org.chuusai:shapeless_${versions.bcScala}:${versions.shapeless}",
+
+    //... Akka
+    akka_actor  : "com.typesafe.akka:akka-actor_${versions.bcScala}:${versions.akka}",
+    akka_slf4j  : "com.typesafe.akka:akka-slf4j_${versions.bcScala}:${versions.akka}",
+    akka_remote : "com.typesafe.akka:akka-remote_${versions.bcScala}:${versions.akka}",
+    akka_camel  : "com.typesafe.akka:akka-camel_${versions.bcScala}:${versions.akka}",
+
+    //... Casbah (Scala mongo driver)
+    casbah : "org.mongodb:casbah-core_${versions.bcScala}:${versions.casbah}",
+    salat  : "com.novus:salat-core_${versions.bcScala}:${versions.salat}",
+
+    //... Spray.io
+    spray_can     : "io.spray:spray-can:${versions.spray}",
+    spray_routing : "io.spray:spray-routing:${versions.spray}",
+
+    //... spray-json
+    spray_json : "io.spray:spray-json_${versions.bcScala}:${versions.spray_json}",
+
+    //... Parboiled
+    parboiled : "org.parboiled:parboiled-scala_${versions.bcScala}:${versions.parboiled}",
+
+    //... Instrumentation
+    atmos_akka : "com.typesafe.atmos:trace-akka-${versions.atmos_akka}_${versions.bcScala}:${versions.atmos}",
+
+    //... Testing
+    junit         : "junit:junit:${versions.junit}",
+    scalatest     : "org.scalatest:scalatest_${versions.bcScala}:${versions.scalatest}",
+    scalacheck    : "org.scalacheck:scalacheck_${versions.bcScala}:${versions.scalacheck}",
+    akka_testkit  : "com.typesafe.akka:akka-testkit_${versions.bcScala}:${versions.akka}",
+    spray_testkit : "io.spray:spray-testkit:${versions.spray}",
+]
+
+exclude_modules += [ ]
+
+//... Gradle Wrapper
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.2.1'
+}
+
+//... Adds the Corporate Nexus repository
+def corporateNexusRepo(delegate) {
+    delegate.with {
+        maven {
+            credentials {
+                username nexusUserName
+                password nexusPassword
+            }
+            url nexusRepoUrl
+        }
+    }
+}
+
+private def getBinaryCompVersion(version) {
+    def matcher = (version =~ /^(\d+\.\d+)\.(.*)$/)
+    if (!matcher.matches()) { throw new IllegalArgumentException("Scala version ${version} did not match expected pattern") }
+    else {
+        matcher[0][1]
+    }
+}
+
+dependencies {
+    compile libraries.scala_library
+
+    compile libraries.scalaz
+    compile libraries.shapeless
+}

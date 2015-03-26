@@ -1,0 +1,25 @@
+*.class
+*.log
+logs/
+
+# gradle specific
+.gradletasknamecache
+.gradle/
+build/
+
+# eclipse/grails
+target/
+target-eclipse/
+bin/
+
+# intellij
+*.ipr
+*.iml
+*.iws
+.idea/
+
+# build
+java-generated/
+out/
+
+*personal.conf
