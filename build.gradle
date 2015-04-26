@@ -9,13 +9,6 @@ ext {
     version    = this.version
     isSnapshot = version.endsWith('-SNAPSHOT')
 
-    //... Nexus settings
-    nexusHost          = 'gtsnexus.liquidnet.com'
-    nexusRealm         = 'Sonatype Nexus Repository Manager'
-    nexusRepoUrl       = "http://${nexusHost}/nexus/content/groups/public"
-    nexusReleasesRepo  = "http://${nexusHost}/nexus/content/repositories/releases"
-    nexusSnapshotsRepo = "http://${nexusHost}/nexus/content/repositories/snapshots"
-
     parentProject  = ":typelevel-experiments" as String
 
     publishedModules = [ ]
@@ -29,21 +22,11 @@ ext {
 //... Inject configuration into all projects
 allprojects { project ->
 
-    repositories {
-        corporateNexusRepo(delegate)
-    }
-
-    buildscript {
-        repositories {
-            corporateNexusRepo(delegate)
-        }
-    }
-
     apply plugin: 'idea'
 
     tasks.withType(ScalaCompile) {
         scalaCompileOptions.additionalParameters = [
-                '-target:jvm-1.6',
+                '-target:jvm-1.7',
                 '-deprecation',
                 '-encoding', 'UTF-8',
                 '-feature',
@@ -53,9 +36,9 @@ allprojects { project ->
                 '-Yno-adapted-args',
                 '-Ywarn-dead-code',
                 '-Ywarn-numeric-widen',
-             // '-Ywarn-value-discard',
+                '-Ywarn-value-discard',
                 '-Xfuture',
-             // '-Ywarn-unused-import',  // 2.11 only
+                '-Ywarn-unused-import',  // 2.11 only
                 '-explaintypes'
         ]
     }
@@ -86,8 +69,6 @@ allprojects { project ->
 //... Library Versions
 versions += [
     oracle_jdbc      : '11.2.0.1.0',
-    solace_jms       : solaceVersion,
-    ln_solace_jms    : "${solaceVersion}_1.0.0",
     camel            : '2.12.2',
     tomcat_jdbc_pool : '7.0.20',
     slf4j            : '1.6.1',
@@ -137,10 +118,6 @@ libraries += [
     log4j_extras   : "log4j:apache-log4j-extras:${versions.log4j_extras}",
 
     //... JMS
-    solace_jms    : "com.solacesystems:sol-jms:${versions.solace_jms}",                        //... Solace JMS
-    solace_jcsmp  : "com.solacesystems:sol-jcsmp:${versions.solace_jms}",                      //... Solace JCSMP
-    solace_common : "com.solacesystems:sol-common:${versions.solace_jms}",                     //... Solace Common
-    ln_solace_jms : "com.liquidnet.messaging.solace:ln-solace-jms:${versions.ln_solace_jms}",  //... LN Solace JMS
     jms_spec      : "org.apache.geronimo.specs:geronimo-jms_1.1_spec:${versions.jms}",         //... JMS Spec
 
     //... Protocol Buffers
@@ -158,9 +135,6 @@ libraries += [
     tomcat_jdbc_pool     : "org.apache.tomcat:tomcat-jdbc:${versions.tomcat_jdbc_pool}",
     tomcat_juli          : "org.apache.tomcat.extras:tomcat-extras-juli:${versions.tomcat_jdbc_pool}",
     tomcat_juli_adapters : "org.apache.tomcat.extras:tomcat-extras-juli-adapters:${versions.tomcat_jdbc_pool}",
-
-    //... Services
-    services_util : "com.liquidnet.grdb.services:services-util:${versions.services_util}",
 
     //... Joda Time
     joda_time    : "joda-time:joda-time:${versions.joda_time}",
@@ -185,7 +159,7 @@ libraries += [
     scalaz : "org.scalaz:scalaz-core_${versions.bcScala}:${versions.scalaz}",
 
     //... Shapeless
-    shapeless : "com.chuusai:shapeless_${versions.bcScala}:${versions.shapeless}",
+    shapeless : "com.chuusai:shapeless_${versions.scala}:${versions.shapeless}",
 
     //... Akka
     akka_actor  : "com.typesafe.akka:akka-actor_${versions.bcScala}:${versions.akka}",
@@ -222,20 +196,7 @@ exclude_modules += [ ]
 
 //... Gradle Wrapper
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.2.1'
-}
-
-//... Adds the Corporate Nexus repository
-def corporateNexusRepo(delegate) {
-    delegate.with {
-        maven {
-            credentials {
-                username nexusUserName
-                password nexusPassword
-            }
-            url nexusRepoUrl
-        }
-    }
+    gradleVersion = '2.3'
 }
 
 private def getBinaryCompVersion(version) {
@@ -252,3 +213,4 @@ dependencies {
     compile libraries.scalaz
     compile libraries.shapeless
 }
+
