@@ -19,52 +19,6 @@ ext {
     exclude_modules = [:]
 }
 
-//... Inject configuration into all projects
-allprojects { project ->
-
-    apply plugin: 'idea'
-
-    tasks.withType(ScalaCompile) {
-        scalaCompileOptions.additionalParameters = [
-                '-target:jvm-1.7',
-                '-deprecation',
-                '-encoding', 'UTF-8',
-                '-feature',
-                '-unchecked',
-                '-Xfatal-warnings',
-                '-Xlint',
-                '-Yno-adapted-args',
-                '-Ywarn-dead-code',
-                '-Ywarn-numeric-widen',
-                '-Ywarn-value-discard',
-                '-Xfuture',
-                '-Ywarn-unused-import',  // 2.11 only
-                '-explaintypes'
-        ]
-    }
-
-    configurations.all {
-        resolutionStrategy {
-            //... Fail eagerly on version conflict (includes transitive dependencies)
-            //... For e.g. multiple different versions of the same dependency (group and name are equal)
-            failOnVersionConflict()
-
-            //... Force certain versions of dependencies (including transitive)
-            /*
-            force libraries.scala_library
-            force libraries.scala_reflect
-            force libraries.scalap
-            force libraries.slf4j_api
-            force libraries.commons_logging
-            force libraries.commons_lang
-            force libraries.parboiled
-            force libraries.casbah
-            force libraries.camel_core
-            force libraries.akka_actor
-            */
-        }
-    }
-}
 
 //... Library Versions
 versions += [
@@ -159,7 +113,7 @@ libraries += [
     scalaz : "org.scalaz:scalaz-core_${versions.bcScala}:${versions.scalaz}",
 
     //... Shapeless
-    shapeless : "com.chuusai:shapeless_${versions.scala}:${versions.shapeless}",
+    shapeless : "com.chuusai:shapeless_${versions.bcScala}:${versions.shapeless}",
 
     //... Akka
     akka_actor  : "com.typesafe.akka:akka-actor_${versions.bcScala}:${versions.akka}",
@@ -193,6 +147,57 @@ libraries += [
 ]
 
 exclude_modules += [ ]
+
+//... Inject configuration into all projects
+allprojects { project ->
+
+    repositories {
+        mavenCentral()
+    }
+
+    apply plugin: 'idea'
+
+    tasks.withType(ScalaCompile) {
+        scalaCompileOptions.additionalParameters = [
+                '-target:jvm-1.7',
+                '-deprecation',
+                '-encoding', 'UTF-8',
+                '-feature',
+                '-unchecked',
+                '-Xfatal-warnings',
+                '-Xlint',
+                '-Yno-adapted-args',
+                '-Ywarn-dead-code',
+                '-Ywarn-numeric-widen',
+                '-Ywarn-value-discard',
+                '-Xfuture',
+                '-Ywarn-unused-import',  // 2.11 only
+                '-explaintypes'
+        ]
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            //... Fail eagerly on version conflict (includes transitive dependencies)
+            //... For e.g. multiple different versions of the same dependency (group and name are equal)
+            failOnVersionConflict()
+
+            //... Force certain versions of dependencies (including transitive)
+            force libraries.scala_library
+            force libraries.scala_reflect
+            force libraries.scalap
+            /*
+            force libraries.slf4j_api
+            force libraries.commons_logging
+            force libraries.commons_lang
+            force libraries.parboiled
+            force libraries.casbah
+            force libraries.camel_core
+            force libraries.akka_actor
+            */
+        }
+    }
+}
 
 //... Gradle Wrapper
 task wrapper(type: Wrapper) {
