@@ -19,6 +19,6 @@ object MyFoldableV2 {
   import ListFoldMapSyntax._
   def main(args: Array[String]): Unit = {
     List("1", "2", "3").foldMap(_.toInt).println
-    List(1, 2, 3).foldMap(identity).println
+    List(1, 2, 3).foldMap().println
   }
 }
