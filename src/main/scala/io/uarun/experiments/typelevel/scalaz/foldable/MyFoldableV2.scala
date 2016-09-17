@@ -1,7 +1,6 @@
 package io.uarun.experiments.typelevel.scalaz.foldable
 
 import scalaz.Monoid
-import scalaz.Show
 
 import scalaz.std.anyVal._
 import scalaz.syntax.monoid._

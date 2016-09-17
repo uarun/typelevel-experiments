@@ -13,7 +13,7 @@ object FunctorSandbox {
     println(func3(3))   //... 6.0
 
 
-    import scalaz.{Functor, Show}
+    import scalaz.Functor
     import scalaz.std.anyVal._
     import scalaz.std.list._
     import scalaz.std.option._
